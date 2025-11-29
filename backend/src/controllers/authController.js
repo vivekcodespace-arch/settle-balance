@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt"
 import { supabase } from "../config/supabaseClient.js";
 import { generateToken } from "../utils/jwt.js";
+import nodemailer from "nodemailer";
 
 export async function signup(req, res) {
   const { name, email, password } = req.body;
@@ -16,7 +17,6 @@ export async function signup(req, res) {
     .single();
 
   if (existingUser) {
-    console.log("user is a fuck boy.")
     return res.status(400).json({ message: "Email already registered" })
   }
 
@@ -69,9 +69,12 @@ export async function sendOtp(req, res) {
   //Generate OTP
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
   const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
+
   
   const hashedPassword = await bcrypt.hash(password,10);
 
+  
+  
   await supabase.from("pending_users").upsert({
     email,
     name,
@@ -79,10 +82,30 @@ export async function sendOtp(req, res) {
     otp,
     otp_expires: otpExpires,
   });
-
+  
   // TODO: send OTP via email (Nodemailer)
+  const transporter = nodemailer.createTransport({
+    service:'gmail',
+    auth:{
+      user: process.env.EMAIL_USER,
+      
+    }
+  })
+  
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: "Your OTP Code",
+    html: `
+    <h2>Your OTP Code</h2>
+    <p>Use this OTP to continue: <b>${otp}</b></p>
+    <p>This OTP will expire in 5 minutes.</p>
+    `,
+  };
+  
+  await transporter.sendMail(mailOptions);
+  
   console.log("OTP:", otp);
-
   return res.json({ message: "OTP sent to your email" });
 }
 
@@ -95,7 +118,6 @@ export async function verifyOtp(req, res) {
     .eq("email", email)
     .single();
 
-  console.log(pending)
   if (!pending) {
     return res.status(400).json({ message: "No pending Signup" })
   }
@@ -103,7 +125,8 @@ export async function verifyOtp(req, res) {
     return res.status(400).json({ message: "Invalid otp" })
   }
 
-  if (new Date() > new Date(pending.otp_expires)) {
+  
+  if (new Date().toISOString() > new Date(pending.otp_expires)) {
     return res.status(400).json({ message: "OTP expired" });
   }
 
