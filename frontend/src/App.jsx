@@ -6,6 +6,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import SignUp from "./pages/SignUp";
+import OtpVerification from "./pages/OtpVerification";
 
 
 // Protected Route component
@@ -26,7 +27,7 @@ const App = () => {
         <Route path="/" element ={<Home/>}/>
         <Route path="/login" element={<Login/>}/>
         <Route path="/signup" element={<SignUp/>}/>
-
+        <Route path="/verify" element={<OtpVerification/>}/>
         {/* Protected Routes */}
         <Route path="/dashboard" element={
           <ProtectedRoute>

@@ -1,4 +1,8 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
+import apiClient from '../services/apiClient';
+import { AuthContext } from '../context/AuthContext';
+import {useNavigate} from "react-router-dom"
+
 
 const SignUp = () => {
   const [form, setForm] = useState({
@@ -6,28 +10,41 @@ const SignUp = () => {
     email:"",
     password:""
   });
+  const [error, setError] = useState("");
+  const {loginUser} = useContext(AuthContext);
+  const navigate = useNavigate();
   const handleChange = (e) => {
     setForm({
       ...form,
       [e.target.name]: e.target.value,
     });
   }
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
+    try {
+      await apiClient.post('/api/auth/send-otp',form);
 
-    console.log("Form submitted")
+      navigate('/verify',{state:{form}});
+      
+      //login user immediately
+      
+
+    }catch(err){
+      console.log(err);
+      setError(err.response?.data?.message || "SingUp failed");
+    }
   }
   return (
     <div className='flex flex-col justify-center items-center w-screen h-screen '>
       <div className='w-[20%] h-[60%]  border-gray-400 border px-10'>
         <form onSubmit={handleSubmit} >
-          <p className='text-center text-4xl font-thin pb-10 pt-10'>Sign Up</p>
+          <p className='text-center text-4xl font-thin pb-10 pt-10 font-orbitron'>Sign Up</p>
 
           {/* Name */} 
           <div className='mb-5'>
           
           <input type="text"
-          className='w-full border-b border-gray-400 focus:border-blue-500 focus:outline-none pb-2'
+          className='font-orbitron w-full border-b border-gray-400 focus:border-blue-500 focus:outline-none pb-2'
           name='name'
           value={form.name}
           onChange={handleChange}
@@ -40,7 +57,7 @@ const SignUp = () => {
           <div className='mb-5'>
           
           <input type="text"
-          className='w-full border-b border-gray-400 focus:border-blue-500 focus:outline-none pb-2'
+          className='font-orbitron w-full border-b border-gray-400 focus:border-blue-500 focus:outline-none pb-2'
           name='email'
           value={form.email}
           onChange={handleChange}
@@ -54,7 +71,7 @@ const SignUp = () => {
           
           <input type="password"
           name='password'
-          className='w-full border-b focus:border-gray-400 focus:outline-none border-gray-400 pb-2'
+          className='font-orbitron w-full border-b focus:border-gray-400 focus:outline-none border-gray-400 pb-2'
           value={form.password}
           onChange={handleChange}
           required
@@ -63,10 +80,11 @@ const SignUp = () => {
           </div>
 
           {/* Submit */}
-          <button type='submit' className=' text-center  w-full mt-8 bg-blue-500 py-1.5 text-white rounded-2xl active:scale-95 active:bg-blue-600 transition-all duration-150'> 
+          <button type='submit' className=' text-center  w-full mt-8 bg-blue-500 py-1.5 text-white font-orbitron rounded-2xl active:scale-95 active:bg-blue-600 transition-all duration-150'> 
             Create Account
           </button>
         </form>
+        {error && <p className="text-red-500 text-center">{error}</p>}
       </div>
     </div>
   )
