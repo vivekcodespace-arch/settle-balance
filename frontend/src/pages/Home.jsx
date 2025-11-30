@@ -20,8 +20,8 @@ const Home = () => {
 
                 <h1 className="font-orbitron text-3xl text-center mt-4 ">Settle Balance</h1>
                 <div className='flex flex-col h-full w-full justify-center items-center gap-15 text-2xl'>
-                    <Link to="/login" className='font-orbitron w-[80%] text-center bg-blue-500 rounded-2xl text-white p-1.5 active:scale-95 active:bg-blue-600 transition-all duration-150'>Login</Link>
-                    <Link to="/signup" className='font-orbitron w-[80%] text-center bg-blue-500 rounded-2xl text-white p-1.5 active:scale-95 active:bg-blue-600 transition-all duration-150'>SignUp</Link>    
+                    <Link to="/login" className='font-orbitron w-[80%] text-center bg-blue-500 rounded-2xl text-white py-1 active:scale-95 active:bg-blue-600 transition-all duration-150'>Login</Link>
+                    <Link to="/signup" className='font-orbitron w-[80%] text-center bg-blue-500 rounded-2xl text-white py-1 active:scale-95 active:bg-blue-600 transition-all duration-150'>SignUp</Link>    
                 </div>
             </div>
         </div>
