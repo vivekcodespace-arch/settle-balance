@@ -1,13 +1,15 @@
 import React, { useState } from 'react'
 import { useAsyncError, useLocation, useNavigate } from 'react-router-dom'
 import apiClient from '../services/apiClient';
+import { AuthContext } from '../context/AuthContext';
+import { useContext } from 'react';
 
 const OtpVerification = () => {
   const [otp, setOtp] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
-
+  const {loginUser} = useContext(AuthContext);
   //get form data passed from signup
   const form = location.state?.form;
 
@@ -17,8 +19,10 @@ const OtpVerification = () => {
         email: form.email,
         otp,
       });
-
+      const { user, token  } = res.data;
+      loginUser(user, token);
       navigate("/dashboard")
+
     }catch(err){
       console.log(err);
       setError(err.response?.data?.message || "Invalid OTP")

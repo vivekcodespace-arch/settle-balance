@@ -15,13 +15,13 @@ const Home = () => {
     }, [user])
 
     return (
-        <div className='bg-blue-500 w-screen h-screen flex justify-center items-center'>
-            <div className='bg-amber-50 w-1/4 h-1/2 flex flex-col'>
+        <div className='w-screen h-screen flex justify-center items-center'>
+            <div className='w-[20%] h-[40%] flex flex-col border border-gray-300 border-trace'>
 
-                <h1 className="font-orbitron  bg-blue-100 text-3xl text-center ">Settle Balance</h1>
-                <div className='flex flex-col bg-red-300 h-full w-full justify-center items-center gap-20 text-2xl'>
-                    <Link to="/login" className='font-orbitron border-2 w-[80%] text-center hover:border-blue-700'>Login</Link>
-                    <Link to="/signup" className='font-orbitron border-2 w-[80%] text-center hover:border-blue-700'>SignUp</Link>    
+                <h1 className="font-orbitron text-3xl text-center mt-4 ">Settle Balance</h1>
+                <div className='flex flex-col h-full w-full justify-center items-center gap-15 text-2xl'>
+                    <Link to="/login" className='font-orbitron w-[80%] text-center bg-blue-500 rounded-2xl text-white p-1.5 active:scale-95 active:bg-blue-600 transition-all duration-150'>Login</Link>
+                    <Link to="/signup" className='font-orbitron w-[80%] text-center bg-blue-500 rounded-2xl text-white p-1.5 active:scale-95 active:bg-blue-600 transition-all duration-150'>SignUp</Link>    
                 </div>
             </div>
         </div>
