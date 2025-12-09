@@ -46,3 +46,17 @@ export async function addMember(req, res) {
 
   res.json(data);
 }
+
+export async function getUserGroups(req, res) {
+  const userId = req.user.id;
+
+  // 1. Get all group_ids where user is a member
+  const {data: memberships, error: mError} = await supabase
+    .from("group_members")
+    .select("group_id")
+    .eq("user_id",userId)
+
+    if(mError) return res.status(400).json({error: mError})
+
+    const 
+}
