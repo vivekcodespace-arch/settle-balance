@@ -7,7 +7,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import SignUp from "./pages/SignUp";
 import OtpVerification from "./pages/OtpVerification";
-
+import GroupDetails from "./pages/GroupDetails";
 
 // Protected Route component
 function ProtectedRoute({children}){
@@ -27,6 +27,7 @@ const App = () => {
         <Route path="/login" element={<Login/>}/>
         <Route path="/signup" element={<SignUp/>}/>
         <Route path="/verify" element={<OtpVerification/>}/>
+        <Route path="/group/:groupId" element = {<GroupDetails/>}/>
         {/* Protected Routes */}
         <Route path="/dashboard" element={
           <ProtectedRoute>

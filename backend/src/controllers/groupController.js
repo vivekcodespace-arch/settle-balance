@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { supabase } from "../config/supabaseClient.js";
 
 export async function createGroup(req, res) {
@@ -74,7 +75,7 @@ export async function getUserGroups(req, res) {
       email
     )
   `)
-  .in("id", groupIds);
+    .in("id", groupIds);
 
   if (gError) return res.status(400).json({ error: gError });
 
@@ -82,3 +83,28 @@ export async function getUserGroups(req, res) {
 
 
 }
+
+export async function getGropuDetails(req, res) {
+  const { id } = req.params;
+  const { data: group, error } = await supabase
+    .from("groups")
+    .select("*, users(*)")
+    .eq("id", id)
+    .single();
+
+  if (error) return res.status(400).json({ error });
+
+  res.json(group);
+}
+
+export async function getUserswithGroupId(req, res) {
+  const { groupId } = req.params;
+  const { data: users, error } = await supabase
+    .from("group_members")
+    .select("* , users(*)")
+    .eq("group_id", groupId)
+  if(error) return res.status(400).json({error});
+  
+  return res.json(users);
+}
+

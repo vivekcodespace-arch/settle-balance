@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useEffect } from 'react';
 import apiClient from '../services/apiClient';
 import CreateGroupModal from '../components/CreateGroupModal';
-import {useNavigate} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 
 const Dashboard = () => {
   const { user } = useContext(AuthContext);
@@ -68,11 +68,11 @@ const Dashboard = () => {
 
           <div className='flex  flex-col gap-3 items-center ml-2 mr-2'>
             {groups.map(group => (
-              <div key={group.id} className='flex w-full p-2 px-7 bg-green-200 rounded-2xl  border border-green-700 justify-between active:scale-95 cursor-pointer'>
+              <Link to={`/group/${group.id}`} key={group.id} className='flex w-full p-2 px-7 bg-green-200 rounded-2xl  border border-green-700 justify-between active:scale-95 cursor-pointer'>
                 <div className='w-[40%]  px-5 wrap-anywhere'>{group.name}</div>
                 <div className='w-[30%]'>Created on : {new Date(group.created_at).toLocaleDateString()}</div>
                 <div className='w-[30%] text-end'>Created by : {group.users.name}</div>
-              </div>
+              </Link>
             ))}
           </div>
 
