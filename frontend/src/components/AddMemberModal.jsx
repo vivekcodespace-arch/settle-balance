@@ -19,13 +19,14 @@ const AddMemberModal = ({isOpen, onClose, groupID}) => {
 
   async function addMember (userID){
     try{
-      await apiClient.post("/api/group/add-member",{
+      await apiClient.post("/api/groups/add-member",{
         group_id: groupID,
         user_id: userID
       })
       alert("Member added!");
       window.location.reload();
     }catch(err){
+      alert("Member already added!");
       console.log(err);
     }
   }

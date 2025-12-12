@@ -36,14 +36,16 @@ export async function createGroup(req, res) {
 
 export async function addMember(req, res) {
   const { group_id, user_id } = req.body;
+  
+    
+    const { data, error } = await supabase
+      .from("group_members")
+      .insert([{ group_id, user_id }])
+      .select()
+      .single();
+  
 
-  const { data, error } = await supabase
-    .from("group_members")
-    .insert([{ group_id, user_id }])
-    .select()
-    .single();
-
-  if (error) return res.status(400).json({ error });
+  if (error) return res.status(400).json({message:"Member already added", error });
 
   res.json(data);
 }
@@ -104,7 +106,42 @@ export async function getUserswithGroupId(req, res) {
     .select("* , users(*)")
     .eq("group_id", groupId)
   if(error) return res.status(400).json({error});
-  
+
   return res.json(users);
+}
+
+export async function deleteRecord(req, res){
+  const {groupId, userId} = req.params;
+
+  try{
+    //First find the record
+    const {data: record , error: findError} = await supabase
+    .from("group_members")
+    .select("*")
+    .eq("group_id", groupId)
+    .eq("user_id",userId)
+    .single();
+
+    if(findError || !record){
+      return res.status(404).json({error: "Member not found"});
+    } 
+
+    //Delet the record
+    const {error: deleteError} =  await supabase
+    .from("group_members")
+    .delete()
+    .eq("group_id",groupId)
+    .eq("user_id",userId);
+
+    if(deleteError) {
+      return res.json(400).json({error:deleteError.message});
+    }
+
+    res.json({message: "Member removed successfully", memberId: userId});
+  }catch(err){
+    console.error(err);
+    res.status(500).json({error:"Server error"});
+  }
+
 }
 
