@@ -1,4 +1,4 @@
-// router.delete("/:groupId/members/:userId", protect, deleteUserfromGroup);
+
 import React, { useEffect, useState } from 'react'
 import apiClient from '../services/apiClient';
 import deleteIcon from '../assets/delete.png';
@@ -9,26 +9,26 @@ const ShowMembers = ({ isOpen, groupID, onClose }) => {
   const [members, setMembers] = useState([])
   const [deletePopUp, setDeletePopUp] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null);
-  useEffect(() => {
-    async function allmembers() {
-      try {
-        const res = await apiClient.get(`api/groups/${groupID}/members`, {
-          groupId: groupID
-        });
-        setMembers(res.data);
-        console.log(members);
-      } catch (err) {
-        console.log(err);
-      }
-    } allmembers();
-  }, []);
+  async function allmembers() {
+    try {
+      const res = await apiClient.get(`api/groups/${groupID}/members`);
+      setMembers(res.data);
+    } catch (err) {
+      console.log(err);
+    }
+  }
 
-  function handleDelete() {
+  useEffect(()=>{
+    allmembers();
+  },[]);
+
+  function handleDelete(user) {
     setDeletePopUp(true);
-    setSelectedMember(members.users);
+    setSelectedMember(user);
 
   }
-  
+
+
   return (
     <div className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm flex justify-center items-center">
       <div className="w-1/3  bg-white p-4 rounded flex flex-col">
@@ -51,19 +51,20 @@ const ShowMembers = ({ isOpen, groupID, onClose }) => {
                 <span> {member.users.email || "Unknown User"} </span>
                 <img
                   src={deleteIcon}
-                  onClick={() => handleDelete()}
+                  onClick={() => handleDelete(member.users)}
                   alt='delete'
                   className='w-5 h-5 cursor-pointer' />
 
               </div>
-              
+
             ))
           )}
         </div>
       </div>
-          {/* Delete PopUp */}
-          {deletePopUp && 
-          <DeletePopUp isOpen={deletePopUp} onClose={()=> setDeletePopUp(false)} group_id={groupID} user={selectedMember}/>}
+      {/* Delete PopUp */}
+      {deletePopUp &&
+        <DeletePopUp isOpen={deletePopUp} onClose={() => setDeletePopUp(false)} group_id={groupID} user={selectedMember} 
+        refreshMembers={allmembers}/>}
 
     </div>
 
