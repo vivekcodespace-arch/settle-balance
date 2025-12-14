@@ -1,149 +1,156 @@
-import React, { useEffect, useState ,useContext} from 'react'
-import { useAsyncError, useParams } from 'react-router-dom'
-import apiClient from '../services/apiClient';
+import React, { useEffect, useState, useContext } from "react";
+import { useParams } from "react-router-dom";
+import apiClient from "../services/apiClient";
 
-import AddMemberModal from '../components/AddMemberModal';
-import ShowMembers from '../components/ShowMembers';
-import AddExpense from '../components/AddExpense';
-import ShowStatus from '../components/ShowStatus';
-import { AuthContext } from '../context/AuthContext';
+import AddMemberModal from "../components/AddMemberModal";
+import ShowMembers from "../components/ShowMembers";
+import AddExpense from "../components/AddExpense";
+import ShowStatus from "../components/ShowStatus";
+import { AuthContext } from "../context/AuthContext";
 
 const GroupDetails = () => {
-    const { user } = useContext(AuthContext);
-    const { groupId } = useParams();
-    const [groupDetails, setGroupDetails] = useState(null);
-    const [showAddMember, setShowAddMember] = useState(false);
-    const [showMembers, setShowMembers] = useState(false);
-    const [showAddExpense, setShowAddExpense] = useState(false);
-    const [expenses, setExpenses] = useState([]);
-    const [showStatus, setShowStatus] = useState(false);
-    useEffect(() => {
-        async function getGroupDetails() {
-            try {
-                const res = await apiClient(`/api/groups/${groupId}`);
-                setGroupDetails(res.data)
+  const { user } = useContext(AuthContext);
+  const { groupId } = useParams();
 
-            } catch (err) {
-                console.log(err);
-            }
-        }
-        getGroupDetails();
-    }, [groupId]);
-    useEffect(() => {
-        console.log("here");
-        console.log(user);
-        console.log('end')
-        console.log(groupDetails);
-    }, [groupDetails])
-    // if(!groupDetails) return <p> Loading...</p>
+  const [groupDetails, setGroupDetails] = useState(null);
+  const [showAddMember, setShowAddMember] = useState(false);
+  const [showMembers, setShowMembers] = useState(false);
+  const [showAddExpense, setShowAddExpense] = useState(false);
+  const [showStatus, setShowStatus] = useState(false);
+  const [expenses, setExpenses] = useState([]);
 
-    async function fetchExpenses() {
-        try {
-            const res = await apiClient.get(`/api/expenses/${groupId}`);
-            setExpenses(res.data);
-            console.log("Expenses:", res.data);
-        } catch (err) {
-            console.log(err);
-        }
+  useEffect(() => {
+    async function getGroupDetails() {
+      try {
+        const res = await apiClient(`/api/groups/${groupId}`);
+        setGroupDetails(res.data);
+      } catch (err) {
+        console.log(err);
+      }
     }
+    getGroupDetails();
+  }, [groupId]);
 
-    useEffect(() => {
-        fetchExpenses();
-    }, [groupId]);
+  async function fetchExpenses() {
+    try {
+      const res = await apiClient.get(`/api/expenses/${groupId}`);
+      setExpenses(res.data);
+    } catch (err) {
+      console.log(err);
+    }
+  }
 
-    return (
-        <div >
-            {/* Navbar */}
-            <div className='bg-red-400 w-full flex justify-between p-1.5 gap-2'>
-                <div className='group-name font-bold text-xl p-1.5 ml-3'>
-                    <h1>{groupDetails === null ?
-                        (<p>Loading...</p>) :
-                        (<p>{groupDetails.name}</p>)
-                    }</h1>
-                </div>
+  useEffect(() => {
+    fetchExpenses();
+  }, [groupId]);
 
-                <div className='flex gap-2 '>
-                    <button className='bg-amber-400 p-1.5 rounded-xl active:scale-95'
-                        onClick={() => setShowStatus(true)}>
-                        Show Status
-                    </button>
-                    <button className='bg-amber-700 p-1.5 rounded-xl active:scale-95'
-                        onClick={() => setShowAddExpense(true)}>
-                        +Add Expense
-                    </button>
+  return (
+    <div className="min-h-screen bg-gray-100">
+      {/* Header */}
+      <div className="sticky top-0 z-20 bg-white shadow-sm px-6 py-3 flex justify-between items-center">
+        <h1 className="text-xl font-semibold text-gray-800">
+          {groupDetails ? groupDetails.name : "Loading..."}
+        </h1>
 
-                    <button onClick={() => setShowMembers(true)}
-                        className='rounded-xl bg-green-500 active:scale-95 p-1.5 cursor-pointer'>
-                        Show Memeber
-                    </button>
-                    <button onClick={() => setShowAddMember(true)}
-                        className='rounded-xl bg-green-600 p-1.5 active:scale-95 cursor-pointer'>
-                        + Add Member
-                    </button>
-                </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowStatus(true)}
+            className="px-4 py-1.5 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 active:scale-95 transition"
+          >
+            Status
+          </button>
 
-            </div>
-            {/* This shows the status of the person in the group */}
-            {
-                showStatus && groupDetails ? (
-                    <ShowStatus
-                        isOpen={showStatus}
-                        onClose={() => setShowStatus(false)}
-                        groupId={groupId}
-                        userId={user.id}
-                    />
-                ) : null
-            }
+          <button
+            onClick={() => setShowAddExpense(true)}
+            className="px-4 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:scale-95 transition"
+          >
+            + Expense
+          </button>
 
-            {/* Add member section */}
-            <AddMemberModal isOpen={showAddMember} onClose={() => setShowAddMember(false)} groupID={groupId} />
+          <button
+            onClick={() => setShowMembers(true)}
+            className="px-4 py-1.5 text-sm bg-gray-200 rounded-lg hover:bg-gray-300 active:scale-95 transition"
+          >
+            Members
+          </button>
 
-            {/* Show memebers */}
-            <ShowMembers isOpen={showMembers} groupID={groupId} onClose={() => setShowMembers(false)} />
-
-            {/* This section for add expene component */}
-            <AddExpense isOpen={showAddExpense} group_id={groupId} onClose={() => setShowAddExpense(false)} refreshExpenses={fetchExpenses} />
-
-
-            {/* Main section */}
-
-            <div>
-                {/* This section shows all the transactions related to that group. */}
-                <div className="mt-6 px-4">
-                    <h2 className="text-xl font-semibold mb-3">Transactions</h2>
-
-                    {expenses.length === 0 ? (
-                        <p className="text-gray-500">No expenses yet.</p>
-                    ) : (
-                        <div className="space-y-3">
-
-                            {expenses.map(exp => (
-                                <div key={exp.id} className="p-3 bg-white rounded shadow flex justify-between">
-
-                                    <div>
-                                        <p className="font-bold">{exp.description}</p>
-                                        <p className="text-sm text-gray-500">
-                                            Paid by {exp.users.name}
-                                        </p>
-                                    </div>
-
-                                    <div className="text-right">
-                                        <p className="text-green-600 font-semibold">₹{exp.amount}</p>
-                                        <p className="text-gray-500 text-sm">
-                                            {new Date(exp.created_at).toLocaleDateString()}
-                                        </p>
-                                    </div>
-
-                                </div>
-                            ))}
-
-                        </div>
-                    )}
-                </div>
-
-            </div>
+          <button
+            onClick={() => setShowAddMember(true)}
+            className="px-4 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 active:scale-95 transition"
+          >
+            + Member
+          </button>
         </div>
-    )
-}
+      </div>
 
-export default GroupDetails
+      {/* Modals */}
+      {showStatus && groupDetails && (
+        <ShowStatus
+          isOpen={showStatus}
+          onClose={() => setShowStatus(false)}
+          groupId={groupId}
+          userId={user.id}
+        />
+      )}
+
+      <AddMemberModal
+        isOpen={showAddMember}
+        onClose={() => setShowAddMember(false)}
+        groupID={groupId}
+      />
+
+      <ShowMembers
+        isOpen={showMembers}
+        groupID={groupId}
+        onClose={() => setShowMembers(false)}
+      />
+
+      <AddExpense
+        isOpen={showAddExpense}
+        group_id={groupId}
+        onClose={() => setShowAddExpense(false)}
+        refreshExpenses={fetchExpenses}
+      />
+
+      {/* Transactions */}
+      <div className="max-w-4xl mx-auto px-4 mt-8">
+        <h2 className="text-lg font-semibold text-gray-700 mb-4">
+          Transactions
+        </h2>
+
+        {expenses.length === 0 ? (
+          <p className="text-gray-500 text-sm">No expenses yet.</p>
+        ) : (
+          <div className="space-y-3">
+            {expenses.map((exp) => (
+              <div
+                key={exp.id}
+                className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 flex justify-between items-center hover:shadow-md transition"
+              >
+                <div className="flex flex-col gap-1">
+                  <p className="font-medium text-gray-800">
+                    {exp.description}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Paid by {exp.users.name}
+                  </p>
+                </div>
+
+                <div className="text-right">
+                  <p className="text-green-600 font-semibold">
+                    ₹{exp.amount}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {new Date(exp.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default GroupDetails;
