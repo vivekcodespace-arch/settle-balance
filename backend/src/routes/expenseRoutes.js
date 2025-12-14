@@ -1,10 +1,13 @@
 import express from "express";
 import { protect } from "../middleware/authMiddleware.js";
-import { addExpense, getExpenses } from "../controllers/expenseController.js";
+import { addExpense, getGroupExpenses, getUserStatus } from "../controllers/expenseController.js";
 
 const router = express.Router();
 
 router.post("/add", protect, addExpense);
-router.get("/:group_id", protect, getExpenses);
+router.get("/:groupId", protect, getGroupExpenses);
+router.get("/:groupId/status/:userId",protect , getUserStatus)
+
+
 
 export default router;

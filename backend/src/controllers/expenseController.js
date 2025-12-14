@@ -57,15 +57,58 @@ export async function addExpense(req, res) {
 }
 
 
-export async function getExpenses(req, res) {
-  const { group_id } = req.params;
+export async function getGroupExpenses(req, res) {
+  const { groupId } = req.params;
 
-  const { data, error } = await supabase
+  const { data: expenses, error } = await supabase
     .from("expenses")
-    .select("*")
-    .eq("group_id", group_id);
+    .select(`
+      *,
+      users:paid_by(name)  -- get payer name
+    `)
+    .eq("group_id", groupId)
+    .order("created_at", { ascending: false });
 
   if (error) return res.status(400).json({ error });
 
-  res.json(data);
+  res.json(expenses);
 }
+
+export async function getUserStatus(req, res) {
+  const { groupId, userId } = req.params;
+
+  // 1️⃣ Get all group members
+  const { data: members, error: memError } = await supabase
+    .from("group_members")
+    .select("user_id")
+    .eq("group_id", groupId);
+
+  if (memError) return res.status(400).json({ error: memError });
+
+  // Create status object = everyone starts at 0
+  const status = {};
+  members.forEach(m => {
+    status[m.user_id] = 0;
+  });
+
+  // 2️⃣ Get all balances for this group
+  const { data: balances, error: balError } = await supabase
+    .from("balances")
+    .select("*")
+    .eq("group_id", groupId);
+
+  if (balError) return res.status(400).json({ error: balError });
+
+  // 3️⃣ Calculate user's personal balance with each other member
+  balances.forEach(b => {
+    if (b.user1 === userId) {
+      status[b.user2] += b.amount;   // positive => user2 owes userId
+    }
+    else if (b.user2 === userId) {
+      status[b.user1] -= b.amount;   // negative => userId owes user1
+    }
+  });
+
+  return res.json({ status });
+}
+

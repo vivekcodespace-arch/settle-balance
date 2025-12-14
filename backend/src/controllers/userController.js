@@ -11,3 +11,14 @@ export async function showAllUsers(req, res){
 
 }
 
+export async function showName(req, res){
+  const {user_id} =  req.params;
+  const{data: user, error} = await supabase
+  .from("users")
+  .select("name")
+  .eq("id",user_id)
+  .single();
+
+  return res.json(user);
+}
+

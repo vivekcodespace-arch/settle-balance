@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import apiClient from '../services/apiClient';
 
-const AddExpense = ({ isOpen, onClose, group_id }) => {
+const AddExpense = ({ isOpen, onClose, group_id , refreshExpenses}) => {
   if (!isOpen) return null;
 
   const [members, setMembers] = useState([]);
@@ -51,6 +51,7 @@ const AddExpense = ({ isOpen, onClose, group_id }) => {
     try {
       await apiClient.post("/api/expenses/add", payload);
       onClose();
+      refreshExpenses();
     } catch (err) {
       console.log(err);
     }
