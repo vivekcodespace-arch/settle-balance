@@ -1,7 +1,10 @@
+
+import { Resend } from "resend";
+
 import bcrypt from "bcrypt"
 import { supabase } from "../config/supabaseClient.js";
 import { generateToken } from "../utils/jwt.js";
-import nodemailer from "nodemailer";
+
 import jwt from "jsonwebtoken";
 
 export async function signup(req, res) {
@@ -64,69 +67,64 @@ export async function login(req, res) {
   res.json({ user, token });
 }
 
+const resend = new Resend(process.env.RESEND_API_KEY);
+
 export async function sendOtp(req, res) {
-  const { name, email, password } = req.body;
-
-  const { data: existingUser } = await supabase
-    .from("users")
-    .select("*")
-    .eq("email", email)
-    .single();
-
-  if (existingUser) {
-    return res.status(400).json({ message: "Email already registered" })
-  }
-
-  //Generate OTP
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
-
-
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-
-
-  await supabase.from("pending_users").upsert({
-    email,
-    name,
-    password: hashedPassword,
-    otp,
-    otp_expires: otpExpires,
-  });
-
-
-  console.log("EMAIL_USER:", process.env.EMAIL_USER);
-  console.log("EMAIL_PASS:", process.env.EMAIL_PASS);
-
-  // TODO: send OTP via email (Nodemailer)
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS
-    }
-  })
-
-
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to: email,
-    subject: "Your OTP Code",
-    html: `
-    <h2>Your OTP Code</h2>
-    <p>Use this OTP to continue: <b>${otp}</b></p>
-    <p>This OTP will expire in 10 minutes.</p>
-    `,
-  };
   try {
-    await transporter.sendMail(mailOptions);
-  } catch (err) {
-    console.error("Email error:", err);
-    return res.status(500).json({ message: "Failed to send OTP", error: err.message });
-  }
+    const { name, email, password } = req.body;
 
-  console.log("OTP:", otp);
-  return res.json({ message: "OTP sent to your email" });
+    // Check existing user
+    const { data: existingUser } = await supabase
+      .from("users")
+      .select("id")
+      .eq("email", email)
+      .single();
+
+    if (existingUser) {
+      return res.status(400).json({ message: "Email already registered" });
+    }
+
+    // Generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Store pending user
+    await supabase.from("pending_users").upsert({
+      email,
+      name,
+      password: hashedPassword,
+      otp,
+      otp_expires: otpExpires,
+    });
+
+    // Send OTP email via Resend
+    await resend.emails.send({
+      from: "Splitwise <onboarding@resend.dev>",
+      to: email,
+      subject: "Your OTP Code",
+      html: `
+        <div style="font-family: Arial, sans-serif;">
+          <h2>Your OTP Code</h2>
+          <p>Use the OTP below to complete your registration:</p>
+          <h1 style="letter-spacing: 3px;">${otp}</h1>
+          <p>This OTP will expire in <b>10 minutes</b>.</p>
+        </div>
+      `,
+    });
+
+    console.log("OTP sent to:", email);
+    return res.json({ message: "OTP sent to your email" });
+
+  } catch (err) {
+    console.error("Resend Email Error:", err);
+    return res.status(500).json({
+      message: "Failed to send OTP",
+      error: err.message,
+    });
+  }
 }
 
 export async function verifyOtp(req, res) {
