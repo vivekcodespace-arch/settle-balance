@@ -50,9 +50,12 @@ const SignUp = () => {
     e.preventDefault()
 
     try {
-      await apiClient.post('/api/auth/send-otp',form);
+      const res = await apiClient.post('/api/auth/signup',form);
+      
+      const { user, token  } = res.data;
+      loginUser(user, token);
+      navigate("/dashboard");
 
-      navigate('/verify',{state:{form}});
 
       //verify-otp endpoint will login the user and sets the token to local
 
